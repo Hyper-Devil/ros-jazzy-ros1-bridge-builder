@@ -13,6 +13,21 @@ See [ROS 2 Jazzy to ROS 1 Noetic bag converter](BagConversion.md).
 
 See [Custom Messages in ros-jazzy-ros1-bridge documentation](CustomMessages_Documentation/CustomMessages.md).
 
+Quick notes synchronized with the latest changes:
+
+- Copy the whole custom message package directory (for example `pseudo_grid_map_msgs/`), not only the inner `msg/` folder.
+- ROS1 package destination: `custom_msgs/custom_msgs_ros1_ws/src/`
+- ROS2 package destination: `custom_msgs/custom_msgs_ros2_ws/src/`
+- If you remove a package on the ROS2 side, remove it from `custom_msgs/custom_msgs_ros2_ws/src/` as well.
+
+Example:
+
+``` bash
+  cd ~/ros-jazzy-ros1-bridge-builder
+  cp -r ~/catkin_ws/src/custom_msgs/pseudo_grid_map_msgs ./custom_msgs/custom_msgs_ros1_ws/src/
+  cp -r ~/ros2_ws/src/custom_interfaces/pseudo_grid_map_msgs ./custom_msgs/custom_msgs_ros2_ws/src/
+```
+
 ## How to create this builder docker images:
 
 ``` bash
@@ -20,6 +35,8 @@ See [Custom Messages in ros-jazzy-ros1-bridge documentation](CustomMessages_Docu
   cd ros-jazzy-ros1-bridge-builder
   docker build . -t ros-jazzy-ros1-bridge-builder:latest
 ```
+
+- Note2: The builder image now installs `ros-jazzy-grid-map-cmake-helpers` and also bundles non-system runtime shared libraries required by `dynamic_bridge` into the exported package.
 
 - Note1: Since building a docker image just needs docker, you could do this step on any system that has docker installed -- it doesn't have to on a Ubuntu 24.04 (Noble) and it doesn't need ROS2 neither.
 

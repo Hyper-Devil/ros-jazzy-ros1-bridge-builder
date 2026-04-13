@@ -64,12 +64,16 @@ RUN apt-get update; \
 
 # fix ARM64 pkgconfig path issue -- Fix provided by ambrosekwok 
 RUN if [[ $(uname -m) = "arm64" || $(uname -m) = "aarch64" ]]; then                     \
-      cp /usr/lib/x86_64-linux-gnu/pkgconfig/* /usr/lib/aarch64-linux-gnu/pkgconfig/;   \
+    cp /usr/lib/x86_64-linux-gnu/pkgconfig/* /usr/lib/aarch64-linux-gnu/pkgconfig/;   \
     fi
 
 ###########################
 # 6.) Compile custom msgs
 ###########################
+
+RUN apt-get update; \
+    apt-get -y install ros-jazzy-grid-map-cmake-helpers; \
+    rm -rf /var/lib/apt/lists/*
 
 COPY custom_msgs /custom_msgs
 RUN \
@@ -103,19 +107,19 @@ RUN                                                                             
     cd /ros-jazzy-ros1-bridge/src;                                                     \
     git clone -b action_bridge_humble https://github.com/smith-doug/ros1_bridge.git;   \
     cd ros1_bridge/;                                                                   \
-                                                                                       \
+    \
     #-------------------------------------                                             \
     # Apply the ROS1 and ROS2 underlays                                                \
     #-------------------------------------                                             \
     source /opt/ros/noetic/setup.bash;                                                 \
     source /opt/ros/jazzy/setup.bash;                                                  \
-                                                                                       \
+    \
     #-------------------------------------                                             \
     # Apply the ROS1 and ROS2 overlays                                                 \
     #-------------------------------------                                             \
     source /custom_msgs/custom_msgs_ros1_ws/install/local_setup.bash;                  \
     source /custom_msgs/custom_msgs_ros2_ws/install/local_setup.bash;                  \
-                                                                                       \
+    \
     #-------------------------------------                                             \
     # Finally, build the Bridge                                                        \
     #-------------------------------------                                             \
@@ -124,15 +128,15 @@ RUN                                                                             
     cd /ros-jazzy-ros1-bridge/;                                                        \
     echo "Please wait...  running $MIN concurrent jobs to build ros1_bridge";          \
     time ROS_DISTRO=humble MAKEFLAGS="-j $MIN" colcon build                            \
-        --event-handlers console_direct+                                               \
-        --cmake-args -DCMAKE_BUILD_TYPE=Release
+    --event-handlers console_direct+                                               \
+    --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 ###########################
 # 9.) Pack all ROS1 dependent libraries
 ###########################
 # fix ARM64 pkgconfig path issue -- Fix provided by ambrosekwok 
 RUN if [[ $(uname -m) = "arm64" || $(uname -m) = "aarch64" ]]; then                    \
-      cp /usr/lib/x86_64-linux-gnu/pkgconfig/* /usr/lib/aarch64-linux-gnu/pkgconfig/;  \
+    cp /usr/lib/x86_64-linux-gnu/pkgconfig/* /usr/lib/aarch64-linux-gnu/pkgconfig/;  \
     fi
 
 RUN ROS1_LIBS="libactionlib.so";                                                \
@@ -150,14 +154,34 @@ RUN ROS1_LIBS="libactionlib.so";                                                
     cd /ros-jazzy-ros1-bridge/install/ros1_bridge/lib;                          \
     source /opt/ros/noetic/setup.bash;                                          \
     for soFile in $ROS1_LIBS; do                                                \
-      soFilePath=$(ldd libros1_bridge.so | grep $soFile | awk '{print $3;}');   \
-      cp -L $soFilePath ./;                                                     \
+    soFilePath=$(ldd libros1_bridge.so | grep $soFile | awk '{print $3;}');   \
+    cp -L $soFilePath ./;                                                     \
     done
+
+# Include all non-system runtime dependencies of ros1_bridge binaries in the
+# exported bundle, so dynamic_bridge can run without extra external overlays.
+RUN set -e;                                                                                          \
+    DEST_LIB_DIR=/ros-jazzy-ros1-bridge/install/ros1_bridge/lib;                                     \
+    source /opt/ros/noetic/setup.bash;                                                               \
+    source /opt/ros/jazzy/setup.bash;                                                                \
+    source /custom_msgs/custom_msgs_ros1_ws/install/local_setup.bash;                                \
+    source /custom_msgs/custom_msgs_ros2_ws/install/local_setup.bash;                                \
+    for target in                                                                                    \
+    /ros-jazzy-ros1-bridge/install/ros1_bridge/lib/ros1_bridge/dynamic_bridge                      \
+    /ros-jazzy-ros1-bridge/install/ros1_bridge/lib/libros1_bridge.so; do                           \
+    ldd "$target" | awk '/=>/ {print $3}' | grep -E '^/' | while read -r soPath; do              \
+    case "$soPath" in                                                                            \
+    /lib/*|/usr/lib/*|/usr/local/lib/*) ;;                                                      \
+    *) cp -L "$soPath" "$DEST_LIB_DIR" ;;                                                     \
+    esac;                                                                                         \
+    done;                                                                                           \
+    done;                                                                                             \
+    test -f "$DEST_LIB_DIR/libelevation_map_msgs__rosidl_typesupport_cpp.so"
 
 ###########################
 # 10.) Spit out ros1_bridge tarball by default when no command is given
 ###########################
 RUN tar czf /ros-jazzy-ros1-bridge.tgz \
-     --exclude '*/build/*' --exclude '*/src/*' /ros-jazzy-ros1-bridge 
+    --exclude '*/build/*' --exclude '*/src/*' /ros-jazzy-ros1-bridge 
 ENTRYPOINT []
 CMD cat /ros-jazzy-ros1-bridge.tgz; sync

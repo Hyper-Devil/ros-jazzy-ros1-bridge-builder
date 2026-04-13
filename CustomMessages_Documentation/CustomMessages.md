@@ -113,9 +113,23 @@ git clone --recurse-submodules https://github.com/TommyChangUMD/ros-jazzy-ros1-b
 
 If you have the two custom message packages of ros1 and ros2 ready with no errors (both have been built successfully). Then all you need to do is:
 
-- Copy the ros1 custom messages packages into the `custom_msgs/ustom_msgs_ros1_ws/src` directory that was cloned, beside any other custom messages packages already there.
-    
-- Copy the ros2 custom messages packages into the `custom_msgs/ustom_msgs_ros2_ws/src` directory that was cloned, beside any other custom messages packages already there (also delete this package if you have deleted the one in the ros2 side).
+- Copy the ros1 custom messages package directory into the `custom_msgs/custom_msgs_ros1_ws/src` directory that was cloned, beside any other custom message packages already there.
+
+- Copy the ros2 custom messages package directory into the `custom_msgs/custom_msgs_ros2_ws/src` directory that was cloned, beside any other custom message packages already there (also delete this package if you have deleted the one in the ros2 side).
+
+> Important: copy the whole package directory (for example `pseudo_grid_map_msgs/`), not only the inner `msg/` folder.
+
+Example:
+
+```bash
+cd ~/ros-jazzy-ros1-bridge-builder
+
+# ROS1 message package -> custom_msgs_ros1_ws/src
+cp -r ~/catkin_ws/src/custom_msgs/pseudo_grid_map_msgs ./custom_msgs/custom_msgs_ros1_ws/src/
+
+# ROS2 message package -> custom_msgs_ros2_ws/src
+cp -r ~/ros2_ws/src/custom_interfaces/pseudo_grid_map_msgs ./custom_msgs/custom_msgs_ros2_ws/src/
+```
 
 ### Building the bridge image
 
