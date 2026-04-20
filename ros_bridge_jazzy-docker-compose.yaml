@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  ros_bridge:
+    image: osrf/ros:jazzy-desktop-full
+    container_name: bridge_env
+    network_mode: "host"
+    ipc: "host"
+    volumes:
+      - ./ros-jazzy-ros1-bridge:/root/ros-jazzy-ros1-bridge:ro
+    environment:
+      - ROS_MASTER_URI=http://localhost:11311
+    command: >a/jazzy/setup.bash &&
+               source /root/ros-jservices:
+  ros_bridge:
+    image: ros-jazzy-ros1-bridge-builder:latest
+    container_name: bridge_env
+    network_mode: "host"
+    ipc: "host"
+    environment:
+      - ROS_MASTER_URI=http://localhost:11311
+    command: >
+      bash -lc "set -e &&
+                source /opt/ros/noetic/setup.bash &&
+                source /opt/ros/jazzy/setup.bash &&
+                source /custom_msgs/custom_msgs_ros1_ws/install/local_setup.bash &&
+                source /custom_msgs/custom_msgs_ros2_ws/install/local_setup.bash &&
+                source /ros-jazzy-ros1-bridge/install/local_setup.bash &&
+                echo 'Bridge custom pairs:' &&
+                ros2 run ros1_bridge dynamic_bridge --print-pairs | grep -E 'grid_map_msgs|elevation_map_msgs' &&
+                echo 'Bridge is starting...' &&
+                exec ros2 run ros1_bridge dynamic_bridge --bridge-all-topics"
+    restart: unless-stoppedazzy-ros1-bridge/install/local_setup.bash &&
+               echo '🚀 Bridge is starting...' &&
+               ros2 run ros1_bridge dynamic_bridge --bridge-all-topics"
+    restart: unless-stopped

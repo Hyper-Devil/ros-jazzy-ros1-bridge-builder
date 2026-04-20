@@ -31,7 +31,7 @@ Example:
 ## How to create this builder docker images:
 
 ``` bash
-  git clone --recurse-submodules https://github.com/TommyChangUMD/ros-jazzy-ros1-bridge-builder.git
+  git clone --recurse-submodules https://github.com/Hyper-Devil/ros-jazzy-ros1-bridge-builder.git
   cd ros-jazzy-ros1-bridge-builder
   docker build . -t ros-jazzy-ros1-bridge-builder:latest
 ```
@@ -178,6 +178,58 @@ $ ros2 run ros1_bridge dynamic_bridge --print-pairs | grep -i tf2
   - 'tf2_msgs/msg/TFMessage' (ROS 2) <=> 'tf2_msgs/TFMessage' (ROS 1)
   - 'tf2_msgs/msg/TFMessage' (ROS 2) <=> 'tf/tfMessage' (ROS 1)
   - 'tf2_msgs/srv/FrameGraph' (ROS 2) <=> 'tf2_msgs/FrameGraph' (ROS 1)
+```
+
+### Fixing custom message bridges failing with "package not found":
+
+Symptoms observed at runtime:
+
+- 2 to 1 fails for `/hikrobot_camera_L/similarity_traversability_info`:
+  `failed to create 2to1 bridge ... package 'elevation_map_msgs' not found`
+- 1 to 2 fails for `/elevation_mapping/elevation_map_raw`:
+  `failed to create 1to2 bridge ... package 'grid_map_msgs' not found`
+
+Root cause:
+
+- The bridge process was started from `osrf/ros:jazzy-desktop-full` with only
+  `/root/ros-jazzy-ros1-bridge/install/local_setup.bash` sourced.
+- The runtime environment did not include ROS1 Noetic and custom message overlays
+  (`/custom_msgs/custom_msgs_ros1_ws/install` and
+  `/custom_msgs/custom_msgs_ros2_ws/install`), so package discovery failed at
+  bridge creation time.
+
+Verification command:
+
+``` bash
+ros2 run ros1_bridge dynamic_bridge --print-pairs | grep -E 'grid_map_msgs|elevation_map_msgs'
+```
+
+If the expected pairs are missing in your runtime container, the environment is
+not complete.
+
+Working fix process:
+
+1. Use `ros-jazzy-ros1-bridge-builder:latest` as runtime image.
+2. Source environments in this order before starting bridge:
+   - `/opt/ros/noetic/setup.bash`
+   - `/opt/ros/jazzy/setup.bash`
+   - `/custom_msgs/custom_msgs_ros1_ws/install/local_setup.bash`
+   - `/custom_msgs/custom_msgs_ros2_ws/install/local_setup.bash`
+   - `/ros-jazzy-ros1-bridge/install/local_setup.bash`
+3. Start bridge with `ros2 run ros1_bridge dynamic_bridge --bridge-all-topics`.
+
+Example docker-compose command section:
+
+``` yaml
+command: >
+  bash -lc "set -e &&
+            source /opt/ros/noetic/setup.bash &&
+            source /opt/ros/jazzy/setup.bash &&
+            source /custom_msgs/custom_msgs_ros1_ws/install/local_setup.bash &&
+            source /custom_msgs/custom_msgs_ros2_ws/install/local_setup.bash &&
+            source /ros-jazzy-ros1-bridge/install/local_setup.bash &&
+            ros2 run ros1_bridge dynamic_bridge --print-pairs | grep -E 'grid_map_msgs|elevation_map_msgs' &&
+            exec ros2 run ros1_bridge dynamic_bridge --bridge-all-topics"
 ```
 
 
