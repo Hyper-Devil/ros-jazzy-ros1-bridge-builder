@@ -1,0 +1,57 @@
+{
+  "emcupy:blackwell-20261026": {
+    "id": "sha256:e273af8a0756bab4dcd385739420d3b110f3c95e0a2b0e437675e46ba755cfad",
+    "repo_digests": [
+      "emcupy@sha256:e273af8a0756bab4dcd385739420d3b110f3c95e0a2b0e437675e46ba755cfad"
+    ],
+    "created": "2026-10-26T23:20:58.508231637+08:00"
+  },
+  "rellis-builder-runtime:20261027": {
+    "id": "sha256:9bab4eb5091ed6390eb9142baaa2ecdbb239731ad0e48512cce4f0c551f4a6f0",
+    "repo_digests": [
+      "rellis-builder-runtime@sha256:9bab4eb5091ed6390eb9142baaa2ecdbb239731ad0e48512cce4f0c551f4a6f0"
+    ],
+    "created": "2026-10-27T23:38:12.377027655+08:00"
+  },
+  "osrf/ros:jazzy-desktop-full": {
+    "id": "sha256:66a2280b1611db0bbce91193561c39791c06e0d21d4c59049572be1a18436d31",
+    "repo_digests": [
+      "osrf/ros@sha256:66a2280b1611db0bbce91193561c39791c06e0d21d4c59049572be1a18436d31"
+    ],
+    "created": "2026-03-18T00:58:48.985127424Z"
+  },
+  "nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04": {
+    "id": "sha256:24c8e3581ea6330038b0d374920721983312627f8adbfcf390bdb4b399d280ed",
+    "repo_digests": [
+      "nvidia/cuda@sha256:24c8e3581ea6330038b0d374920721983312627f8adbfcf390bdb4b399d280ed"
+    ],
+    "created": "2025-03-10T23:14:56.277863672Z"
+  },
+  "robotics/noetic-cuda:20261028": {
+    "id": "sha256:9241380de0601c6ce316e447067553d43b2dbcc95433b16879e8afbbaeba433b",
+    "repo_digests": [
+      "robotics/noetic-cuda@sha256:9241380de0601c6ce316e447067553d43b2dbcc95433b16879e8afbbaeba433b"
+    ],
+    "created": "2026-10-28T15:00:53.707782487+08:00"
+  },
+  "robotics/jazzy-cuda:20261028": {
+    "id": "sha256:e518abbfb543352e7a951283dbd4fc92f992ab9d23fc89abca7bb8e40c5bcd56",
+    "repo_digests": [
+      "robotics/jazzy-cuda@sha256:e518abbfb543352e7a951283dbd4fc92f992ab9d23fc89abca7bb8e40c5bcd56"
+    ],
+    "created": "2026-10-28T15:07:44.252474992+08:00"
+  },
+  "robotics/bridge-jazzy:20261028": {
+    "id": "sha256:12b6f7ef218570d96d695dfaac0981ff082fdd936bfa47206111425152948075",
+    "repo_digests": [
+      "robotics/bridge-jazzy@sha256:12b6f7ef218570d96d695dfaac0981ff082fdd936bfa47206111425152948075"
+    ],
+    "created": "2026-10-28T14:51:49.223322998+08:00"
+  },
+  "sources": {
+    "builder": "4b8982670560a4a990575709001f6f0266c459ba",
+    "bridge": "8f1b7e903e1fb4462218db659bb4981228c12206",
+    "custom_msgs": "d41b98c28667165483eb7d8ed725f0e8bdf9b296",
+    "calibrator": "73c6edbebfc506bcdcdf1fd497177fd4f53ce403"
+  }
+}

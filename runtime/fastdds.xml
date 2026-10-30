@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <profiles>
+    <participant profile_name="robotics_local" is_default_profile="true">
+      <rtps>
+        <!-- Shared host IPC permits the default local SHM transport. UDP remains
+             available for discovery/fallback; these are socket requests, not
+             kernel limits. See tune_network.py for the matching host settings. -->
+        <sendSocketBufferSize>16777216</sendSocketBufferSize>
+        <listenSocketBufferSize>16777216</listenSocketBufferSize>
+      </rtps>
+    </participant>
+  </profiles>
+</dds>

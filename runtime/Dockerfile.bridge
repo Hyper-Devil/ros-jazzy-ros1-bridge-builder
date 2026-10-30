@@ -1,0 +1,15 @@
+# Follow this repository's Noble/Noetic-PPA method, but compile mounted sources
+# into host build directories rather than baking project snapshots into images.
+FROM osrf/ros:jazzy-desktop-full
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      software-properties-common python3-colcon-common-extensions \
+      ros-jazzy-grid-map-cmake-helpers g++-11 gcc-11 && \
+    add-apt-repository -y ppa:ros-for-jammy/noble && \
+    apt-get update && apt-get install -y --no-install-recommends ros-noetic-desktop && \
+    rm -rf /var/lib/apt/lists/*
+ENV CC=gcc-11 CXX=g++-11
+WORKDIR /mnt/nvme1n1/whd
+ENTRYPOINT []
+CMD ["sleep", "infinity"]

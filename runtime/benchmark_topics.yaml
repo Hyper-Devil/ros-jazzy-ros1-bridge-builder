@@ -1,0 +1,21 @@
+topics:
+  - topic: /runtime_bench/image_1to2
+    type: sensor_msgs/msg/Image
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: best_effort}
+  - topic: /runtime_bench/cloud_1to2
+    type: sensor_msgs/msg/PointCloud2
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: best_effort}
+  - topic: /runtime_bench/image_2to1
+    type: sensor_msgs/msg/Image
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: best_effort}
+  - topic: /runtime_bench/cloud_2to1
+    type: sensor_msgs/msg/PointCloud2
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: best_effort}
+  - topic: /runtime_bench/grid_1to2
+    type: grid_map_msgs/msg/GridMap
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: reliable}

@@ -1,0 +1,50 @@
+name: robotics
+x-common: &common
+  network_mode: host
+  ipc: host
+  init: true
+  stdin_open: true
+  tty: true
+  working_dir: ${PROJECTS_ROOT:-/mnt/nvme1n1/whd}
+  environment: &environment
+    PROJECTS_ROOT: ${PROJECTS_ROOT:-/mnt/nvme1n1/whd}
+    ROS_MASTER_URI: http://127.0.0.1:11671
+    ROS_IP: 127.0.0.1
+    ROS_HOSTNAME: localhost
+    ROS_DOMAIN_ID: '71'
+    ROS_AUTOMATIC_DISCOVERY_RANGE: LOCALHOST
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    FASTDDS_DEFAULT_PROFILES_FILE: ${PROJECTS_ROOT:-/mnt/nvme1n1/whd}/ros-jazzy-ros1-bridge-builder/runtime/fastdds.xml
+    OMP_NUM_THREADS: '4'
+    OPENBLAS_NUM_THREADS: '1'
+  volumes:
+    - ${PROJECTS_ROOT:-/mnt/nvme1n1/whd}:${PROJECTS_ROOT:-/mnt/nvme1n1/whd}
+    - ${UV_PYTHON_ROOT:-/home/whd/.local/share/uv/python}:/home/whd/.local/share/uv/python:ro
+    - /mnt/sda/datasets:/mnt/sda/datasets:ro
+    - /tmp/.X11-unix:/tmp/.X11-unix
+services:
+  noetic:
+    <<: *common
+    container_name: ros1-noetic
+    image: robotics/noetic-cuda:20261028
+    build:
+      context: ..
+      dockerfile: runtime/Dockerfile.noetic
+    gpus: all
+  jazzy:
+    <<: *common
+    container_name: ros2-jazzy
+    image: robotics/jazzy-cuda:20261028
+    build:
+      context: ..
+      dockerfile: runtime/Dockerfile.jazzy
+      additional_contexts:
+        gpu_site: ${PROJECTS_ROOT:-/mnt/nvme1n1/whd}/uam2te/.venv/lib/python3.12/site-packages
+    gpus: all
+  bridge:
+    <<: *common
+    container_name: ros1-ros2-bridge
+    image: robotics/bridge-jazzy:20261028
+    build:
+      context: ..
+      dockerfile: runtime/Dockerfile.bridge

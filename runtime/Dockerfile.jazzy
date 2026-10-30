@@ -1,0 +1,25 @@
+ARG CUDA_BASE=nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04
+ARG ROS_BASE=osrf/ros:jazzy-desktop-full
+FROM ${CUDA_BASE} AS cuda
+FROM ${ROS_BASE}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
+COPY --from=cuda /usr/local/cuda-12.8 /usr/local/cuda-12.8
+RUN ln -sfn /usr/local/cuda-12.8 /usr/local/cuda && \
+    apt-get update && apt-get install -y --no-install-recommends \
+      python3-venv python3-pip python3-colcon-common-extensions \
+      ros-jazzy-navigation2 ros-jazzy-nav2-bringup ros-jazzy-grid-map-msgs \
+      ros-jazzy-grid-map-cmake-helpers ros-jazzy-rmw-fastrtps-cpp \
+    && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv --system-site-packages /opt/gpu
+# Capture already-verified ML DEPENDENCIES, never a project checkout. The
+# additional named context is the host venv's site-packages, recorded in the lock.
+COPY --from=gpu_site / /opt/gpu/lib/python3.12/site-packages/
+RUN /opt/gpu/bin/pip uninstall -y numpy opencv-python opencv-python-headless && \
+    /opt/gpu/bin/pip install --no-cache-dir numpy==1.26.4 scipy==1.13.1 opencv-python-headless==4.10.0.84 cupy-cuda12x==13.6.0 && \
+    /opt/gpu/bin/python -c "import torch; assert torch.__version__ == '2.10.0+cu128'"
+ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+    CUDA_HOME=/usr/local/cuda-12.8
+WORKDIR /mnt/nvme1n1/whd
+ENTRYPOINT []
+CMD ["sleep", "infinity"]

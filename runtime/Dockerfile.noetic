@@ -1,0 +1,27 @@
+# Reuse verified GPU dependencies. Application code is always bind-mounted.
+ARG SLAM_BASE=rellis-builder-runtime:20261027
+ARG GPU_BASE=emcupy:blackwell-20261026
+FROM ${SLAM_BASE} AS slam
+FROM ${GPU_BASE}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+USER root
+ENV DEBIAN_FRONTEND=noninteractive
+COPY --from=slam /usr/local/lib/libgtsam* /usr/local/lib/
+COPY --from=slam /usr/local/include/gtsam /usr/local/include/gtsam
+COPY --from=slam /usr/local/lib/cmake/GTSAM /usr/local/lib/cmake/GTSAM
+# The accepted image pins the working EOL Noetic packages. Disable its obsolete
+# apt index instead of upgrading ROS from stale, expired repository metadata.
+RUN python3 -c "from pathlib import Path; [p.rename(str(p)+'.disabled') for p in Path('/etc/apt/sources.list.d').glob('*.list') if 'packages.ros.org/ros/ubuntu' in p.read_text()]" && \
+    apt-get update && apt-get install -y --no-install-recommends \
+      libgeographic-dev libtbb-dev cuda-nvcc-12-8 cuda-cudart-dev-12-8 \
+    && ldconfig && rm -rf /var/lib/apt/lists/*
+COPY --from=slam /usr/local/lib/libmetis-gtsam.so /usr/local/lib/
+COPY --from=slam /usr/local/lib/libCppUnitLite.a /usr/local/lib/
+COPY --from=slam /usr/local/include/CppUnitLite /usr/local/include/CppUnitLite
+COPY --from=slam /usr/local/lib/cmake/GTSAMCMakeTools /usr/local/lib/cmake/GTSAMCMakeTools
+RUN ldconfig
+ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+    CUDA_HOME=/usr/local/cuda-12.8 PATH=/usr/local/cuda-12.8/bin:${PATH}
+WORKDIR /mnt/nvme1n1/whd
+ENTRYPOINT []
+CMD ["sleep", "infinity"]

@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(cvar_runtime)
+find_package(catkin REQUIRED)
+catkin_package()
+catkin_install_python(PROGRAMS rellis_camera.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

@@ -1,4 +1,7 @@
 # ros-jazzy-ros1-bridge-builder
+
+本机 FAST-LIO-SAM / UAM2TE / EMCP / Nav2 的三个容器部署与当前启动说明，见 [runtime/DEPLOYMENT.md](runtime/DEPLOYMENT.md)；环境细节与历史实验见 [runtime/README.md](runtime/README.md)。项目源码直接挂载宿主机，编译产物分别保存到 `.runtime/`。
+
 Create a "*ros-jazzy-ros1-bridge*" package that can be used directly within Ubuntu 24.04 (Noble) ROS2 Jazzy. Currently, only AMD64 architectures is supported due to lack of ARM64 builds in the ppa:ros-for-jammy/noble repository.
 
 - Note1: It takes approximately 10 minutes on my PC, equipped with a 6-core CPU (12 logical cores) and 24GB of memory.

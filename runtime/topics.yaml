@@ -1,0 +1,27 @@
+# Explicit topic allowlist. Raw image/cloud traffic stays within its owning ROS
+# environment by default. Add only the streams needed across the boundary.
+topics:
+  - topic: /clock
+    type: rosgraph_msgs/msg/Clock
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: best_effort}
+  - topic: /tf
+    type: tf2_msgs/msg/TFMessage
+    queue_size: 100
+    qos: {history: keep_last, depth: 100, reliability: reliable}
+  - topic: /tf_static
+    type: tf2_msgs/msg/TFMessage
+    queue_size: 1
+    qos: {history: keep_all, reliability: reliable, durability: transient_local}
+  - topic: /Odometry
+    type: nav_msgs/msg/Odometry
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: best_effort}
+  - topic: /similarity_costmap
+    type: nav_msgs/msg/OccupancyGrid
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: reliable, durability: transient_local}
+  - topic: /cmd_vel
+    type: geometry_msgs/msg/Twist
+    queue_size: 1
+    qos: {history: keep_last, depth: 1, reliability: reliable}

@@ -1,0 +1,67 @@
+<launch>
+  <arg name="reference_speed" default="0.8"/>
+  <arg name="ema_gamma" default="0.2"/>
+  <arg name="support_min" default="0.15"/>
+  <arg name="mapping_window" default="[]"/>
+  <arg name="mapping_audit_path" default=""/>
+  <arg name="ema_trace_dir" default=""/>
+  <arg name="worker_url" default="http://127.0.0.1:8765"/>
+  <arg name="output_dir"/>
+  <arg name="calibration_dir"/>
+  <arg name="resolution" default="0.5"/>
+  <arg name="cost_encoding" default="five_level"/>
+  <arg name="cost_thresholds" default="[0.2,0.35,0.5,0.65]"/>
+  <arg name="map_length" default="400.0"/>
+  <arg name="origin_x" default="-50.0"/>
+  <arg name="origin_y" default="-200.0"/>
+  <param name="/use_sim_time" value="true"/>
+  <include file="$(find fast_lio_sam)/launch/mapping_rellis3d.launch">
+    <arg name="use_sim_time" value="true"/>
+    <arg name="output_dir" value="$(arg output_dir)/slam"/>
+    <arg name="rviz" value="false"/>
+  </include>
+  <include file="$(arg calibration_dir)/camera.launch"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rellis_map_camera_init"
+        args="0 0 0 0 0 0 1 map camera_init"/>
+  <node pkg="cvar_runtime" type="rellis_camera.py" name="rellis_camera_rectifier" output="screen" required="true">
+    <param name="calibration_file" value="$(arg calibration_dir)/calibration.json"/>
+    <param name="output_topic" value="/uam2te/rellis/image_rect"/>
+  </node>
+  <include file="$(find uam2te_msgs)/launch/navigation.launch">
+    <arg name="mapping_window" value="$(arg mapping_window)"/>
+    <arg name="mapping_audit_path" value="$(arg mapping_audit_path)"/>
+    <!-- EMCP needs the moving sensor origin for height/range/noise filtering. -->
+    <arg name="pointcloud_topic" value="/cloud_registered_body"/>
+    <arg name="image_topic" value="/uam2te/rellis/image_rect"/>
+    <arg name="camera_info_topic" value="/uam2te/rellis/image_rect/camera_info"/>
+    <arg name="worker_url" value="$(arg worker_url)"/>
+    <arg name="reference_speed" value="$(arg reference_speed)"/>
+    <arg name="cvar_alpha" value="0.95"/>
+    <arg name="ema_gamma" value="$(arg ema_gamma)"/>
+    <arg name="support_min" value="$(arg support_min)"/>
+    <arg name="ema_trace_dir" value="$(arg ema_trace_dir)"/>
+    <arg name="resolution" value="$(arg resolution)"/>
+    <arg name="cost_encoding" value="$(arg cost_encoding)"/>
+    <arg name="cost_thresholds" value="$(arg cost_thresholds)"/>
+    <arg name="map_length" value="$(arg map_length)"/>
+    <arg name="origin_x" value="$(arg origin_x)"/>
+    <arg name="origin_y" value="$(arg origin_y)"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="save_path" value="$(arg output_dir)/statistics_alpha_095.npz"/>
+  </include>
+  <node pkg="elevation_mapping_cupy" type="generate_risk_costmap.py" name="navigation_risk_costmap_alpha_005" output="screen" required="true">
+    <param name="grid_topic" value="/navigation_elevation/filtered_elevation_map"/>
+    <param name="map_frame" value="map"/>
+    <param name="resolution" value="$(arg resolution)"/>
+    <param name="cost_encoding" value="$(arg cost_encoding)"/>
+    <rosparam param="cost_thresholds" subst_value="true">$(arg cost_thresholds)</rosparam>
+    <param name="map_length" value="$(arg map_length)"/>
+    <param name="origin_x" value="$(arg origin_x)"/>
+    <param name="origin_y" value="$(arg origin_y)"/>
+    <param name="reference_speed" value="$(arg reference_speed)"/>
+    <param name="ema_gamma" value="$(arg ema_gamma)"/>
+    <param name="cvar_alpha" value="0.05"/>
+    <param name="save_path" value="$(arg output_dir)/statistics_alpha_005.npz"/>
+    <remap from="/similarity_costmap" to="/similarity_costmap_alpha_005"/>
+  </node>
+</launch>
